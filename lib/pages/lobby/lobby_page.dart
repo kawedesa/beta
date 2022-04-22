@@ -70,14 +70,14 @@ class _LobbyPageState extends State<LobbyPage> {
                                               0.1,
                                           decoration: BoxDecoration(
                                             color: _lobbyVM.uiColor
-                                                .setPlayerColor(
+                                                .getPlayerColor(
                                                     players[index].id),
                                             border: Border.all(
                                               color: (players[index].id ==
                                                       user.id)
                                                   ? Colors.white
                                                   : _lobbyVM.uiColor
-                                                      .setPlayerColor(
+                                                      .getPlayerColor(
                                                           players[index].id),
                                               width: 3,
                                             ),

@@ -1,3 +1,5 @@
+import 'package:beta/models/equipment/chest.dart';
+import 'package:beta/models/equipment/item.dart';
 import 'package:beta/models/player/player_action.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider(create: (context) => user),
+        //GAME
         StreamProvider<Game>(
           initialData: Game.newGame(),
           create: (context) => database
@@ -41,6 +44,7 @@ class MyApp extends StatelessWidget {
               .snapshots()
               .map((game) => Game.fromMap(game.data())),
         ),
+        //PLAYERS
         StreamProvider<List<Player>>(
           initialData: const [],
           create: (context) => database
@@ -52,6 +56,31 @@ class MyApp extends StatelessWidget {
                   .map((player) => Player.fromMap(player.data()))
                   .toList()),
         ),
+        //CHEST
+        StreamProvider<List<Chest>>(
+          initialData: const [],
+          create: (context) => database
+              .collection('game')
+              .doc('beta')
+              .collection('chest')
+              .snapshots()
+              .map((querySnapshot) => querySnapshot.docs
+                  .map((loot) => Chest.fromMap(loot.data()))
+                  .toList()),
+        ),
+        //EQUIPMENT
+        StreamProvider<List<Item>>(
+          initialData: const [],
+          create: (context) => database
+              .collection('game')
+              .doc('beta')
+              .collection('item')
+              .snapshots()
+              .map((querySnapshot) => querySnapshot.docs
+                  .map((equipment) => Item.fromMap(equipment.data()))
+                  .toList()),
+        ),
+        //TURN ORDER
         StreamProvider<List<PlayerAction>>(
           initialData: const [],
           create: (context) => database

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../models/equipment/chest.dart';
 import '../../models/game/game.dart';
 import '../lobby/lobby_page.dart';
 
@@ -38,6 +39,41 @@ class HomeVM {
     });
 
     turnBatch.commit();
+
+    var chestBatch = database.batch();
+
+    await database
+        .collection('game')
+        .doc('beta')
+        .collection('chest')
+        .get()
+        .then((snapshot) {
+      for (DocumentSnapshot ds in snapshot.docs) {
+        chestBatch.delete(ds.reference);
+      }
+    });
+    chestBatch.commit();
+
+    var itemBatch = database.batch();
+
+    await database
+        .collection('game')
+        .doc('beta')
+        .collection('item')
+        .get()
+        .then((snapshot) {
+      for (DocumentSnapshot ds in snapshot.docs) {
+        itemBatch.delete(ds.reference);
+      }
+    });
+    itemBatch.commit();
+
+    await database
+        .collection('game')
+        .doc('beta')
+        .collection('chest')
+        .doc('1')
+        .set(Chest.newChest('1', const Offset(50, 50)).toMap());
   }
 
   void goToLobbyPage(context) {

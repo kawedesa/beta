@@ -12,10 +12,10 @@ class PathFinding {
 
     Offset currentPosition = startPosition;
 
-    while (bestPath.length < 20) {
+    while (bestPath.length < 10) {
       List<Offset> possibleNodes = [];
       Offset bestNode = startPosition;
-      int walkDistance = 5;
+      int walkDistance = 2;
 
       //Create points around the current location
 

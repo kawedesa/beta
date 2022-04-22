@@ -1,4 +1,4 @@
-import 'package:beta/pages/map/components/path_finding.dart';
+import 'package:beta/shared/path_finding.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../../../../models/player/player.dart';
@@ -22,8 +22,8 @@ class _EnemySpriteState extends State<EnemySprite>
 
   @override
   void initState() {
-    animationController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
     super.initState();
     _animation = Tween(begin: 0.0, end: 1.0).animate(animationController)
       ..addListener(() {
@@ -38,8 +38,8 @@ class _EnemySpriteState extends State<EnemySprite>
   }
 
   Offset calculatePosition(value) {
-    if (widget.player.location.oldLocation ==
-        widget.player.location.newLocation) {
+    if (widget.player.location.
+    isStop()) {
       return widget.player.location.oldLocation;
     }
 
@@ -53,8 +53,7 @@ class _EnemySpriteState extends State<EnemySprite>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.player.location.oldLocation !=
-        widget.player.location.newLocation) {
+    if (widget.player.location.isWalking()) {
       _pathFinding.setPath(widget.player.location.oldLocation,
           widget.player.location.newLocation, widget.obstacles);
       animationController.forward();

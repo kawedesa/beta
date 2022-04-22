@@ -6,20 +6,20 @@ class TurnController {
   void checkGamePhase(String phase) {
     switch (phase) {
       case 'action':
-        throw ActionPhase();
+        throw ActionPhaseException();
       case 'animation':
-        throw AnimationPhase();
+        throw AnimationPhaseException();
     }
   }
 
   void checkForPlayerTurn(List<PlayerAction> turnOrder, String id) {
     if (turnOrder.isEmpty) {
-      throw StartActionPhase();
+      throw StartActionPhaseException();
     }
 
     if (turnOrder.first.id != id) {
-      throw NotPlayerTurn();
+      throw NotPlayerTurnException();
     }
-    throw PlayerTurn();
+    throw PlayerTurnException();
   }
 }

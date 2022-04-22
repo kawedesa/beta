@@ -1,14 +1,19 @@
+import 'package:beta/pages/map/components/sprite/chest_sprite.dart';
+import 'package:beta/pages/map/components/sprite/item_sprite.dart';
 import 'package:flutter/material.dart';
+import '../../models/equipment/chest.dart';
+import '../../models/equipment/item.dart';
+import '../../models/equipment/equipment.dart';
 import '../../models/game/turn_controller.dart';
 import '../../models/player/player.dart';
 import '../../models/player/player_controller.dart';
 import '../../shared/app_color.dart';
 import '../lobby/lobby_page.dart';
-import 'components/enemy_sprite/enemy_sprite.dart';
+import 'components/sprite/enemy_sprite.dart';
+import 'game_map.dart';
 import 'map_animation_controller.dart';
 
 class MapVM {
-  UIColor uiColor = UIColor();
   PlayerController playerController = PlayerController.empty();
   TurnController turnController = TurnController();
   MapAnimationController animationController = MapAnimationController();
@@ -21,18 +26,20 @@ class MapVM {
     ..lineTo(192, 128)
     ..close();
 
+  GameMap map = GameMap.newMap();
+
   double mapSize = 320;
-  double minZoom = 3;
+  double minZoom = 4;
   double maxZoom = 15;
 
-  void setCanvas(context, double mapSize) {
+  void setCanvas(context) {
     if (canvasController != null) {
       return;
     }
-    updateCanvasController(context, mapSize);
+    updateCanvasController(context);
   }
 
-  void updateCanvasController(context, double mapSize) {
+  void updateCanvasController(context) {
     double dxCanvas =
         playerController.player.location.oldLocation.dx * minZoom -
             MediaQuery.of(context).size.width / 2;
@@ -58,17 +65,40 @@ class MapVM {
         minZoom, 0, 0, 0, 0, minZoom, 0, -dxCanvas, -dyCanvas, 0, 1));
   }
 
-  List<Widget> enemy = [];
+  List<Widget> visibleEnemies = [];
 
   void setEnemy(List<Player> players, String playerID) {
-    enemy = [];
+    visibleEnemies = [];
     for (Player player in players) {
       if (player.id != playerID) {
-        enemy.add(EnemySprite(
+        visibleEnemies.add(EnemySprite(
           obstacles: wall,
           player: player,
         ));
       }
+    }
+  }
+
+  List<ChestSprite> visibleChests = [];
+
+  void setChest(List<Chest> chestList) {
+    visibleChests = [];
+
+    for (Chest chest in chestList) {
+      visibleChests.add(ChestSprite(chest: chest));
+    }
+  }
+
+  List<ItemSprite> visibleItems = [];
+
+  void setItem(List<Item> itemList) {
+    visibleItems = [];
+
+    for (Item item in itemList) {
+      visibleItems.add(ItemSprite(
+        controller: playerController,
+        item: item,
+      ));
     }
   }
 

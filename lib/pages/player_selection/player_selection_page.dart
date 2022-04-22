@@ -48,7 +48,7 @@ class _PlayerSelectionPageState extends State<PlayerSelectionPage> {
                         itemBuilder: (BuildContext context, index) {
                           return Card(
                             color: _playerSelectionVM.uiColor
-                                .setPlayerColor(game.availablePlayers[index]),
+                                .getPlayerColor(game.availablePlayers[index]),
                             child: InkWell(
                               splashColor: Colors.blue.withAlpha(30),
                               onTap: () {
@@ -58,7 +58,7 @@ class _PlayerSelectionPageState extends State<PlayerSelectionPage> {
                                   builder: (BuildContext context) {
                                     return NameDialog(
                                         color: _playerSelectionVM.uiColor
-                                            .setPlayerColor(user.id),
+                                            .getPlayerColor(user.id),
                                         confirm: (name) {
                                           _playerSelectionVM.newPlayer(
                                               user.id, name);

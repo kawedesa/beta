@@ -3,17 +3,23 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../equipment/equipment.dart';
+
 class Player {
   String id;
   String name;
   PlayerLocation location;
   int life;
+  Equipment leftHand;
+  Equipment rightHand;
 
   Player({
     required this.id,
     required this.name,
     required this.location,
     required this.life,
+    required this.leftHand,
+    required this.rightHand,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,6 +28,8 @@ class Player {
       'name': name,
       'location': location.toMap(),
       'life': life,
+      'leftHand': leftHand.toMap(),
+      'rightHand': rightHand.toMap(),
     };
   }
 
@@ -31,6 +39,8 @@ class Player {
       name: data?['name'],
       location: PlayerLocation.fromMap(data?['location']),
       life: data?['life'],
+      leftHand: Equipment.fromMap(data?['leftHand']),
+      rightHand: Equipment.fromMap(data?['rightHand']),
     );
   }
 
@@ -40,6 +50,8 @@ class Player {
       name: '',
       location: PlayerLocation.empty(),
       life: 0,
+      leftHand: Equipment.empty(),
+      rightHand: Equipment.empty(),
     );
   }
 
@@ -53,6 +65,8 @@ class Player {
       name: name,
       location: location,
       life: 10,
+      leftHand: Equipment.empty(),
+      rightHand: Equipment.empty(),
     );
   }
 
@@ -103,6 +117,31 @@ class Player {
         .collection('players')
         .doc(id)
         .update({'location': location.toMap()});
+  }
+
+  void equip(String equipmentSlot, Equipment newEquipment) {
+    switch (equipmentSlot) {
+      case 'leftHand':
+        leftHand = newEquipment;
+        break;
+
+      case 'rightHand':
+        rightHand = newEquipment;
+        break;
+    }
+    updateEquipment();
+  }
+
+  void updateEquipment() async {
+    await database
+        .collection('game')
+        .doc('beta')
+        .collection('players')
+        .doc(id)
+        .update({
+      'rightHand': rightHand.toMap(),
+      'leftHand': leftHand.toMap(),
+    });
   }
 }
 
@@ -157,8 +196,24 @@ class PlayerLocation {
     );
   }
 
-  void startWalk(Offset localPosition) async {
-    newLocation = localPosition;
+  bool isWalking() {
+    if (oldLocation != newLocation) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool isStop() {
+    if (oldLocation == newLocation) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void startWalk(Offset toLocation) {
+    newLocation = toLocation;
   }
 
   void endWalk() {

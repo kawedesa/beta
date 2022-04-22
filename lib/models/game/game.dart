@@ -4,13 +4,11 @@ class Game {
   bool isRunning;
   String phase;
   List<String> availablePlayers;
-  List<String> turnOrder;
 
   Game({
     required this.isRunning,
     required this.phase,
     required this.availablePlayers,
-    required this.turnOrder,
   });
 
   Map<String, dynamic> toMap() {
@@ -18,7 +16,6 @@ class Game {
       'isRunning': isRunning,
       'phase': phase,
       'availablePlayers': availablePlayers,
-      'turnOrder': turnOrder,
     };
   }
 
@@ -29,17 +26,10 @@ class Game {
       availablePlayers.add(playerID);
     }
 
-    List<String> turnOrder = [];
-    List<dynamic> turnOrderMap = data?['turnOrder'];
-    for (var playerID in turnOrderMap) {
-      turnOrder.add(playerID);
-    }
-
     return Game(
       isRunning: data?['isRunning'],
       phase: data?['phase'],
       availablePlayers: availablePlayers,
-      turnOrder: turnOrder,
     );
   }
 
@@ -48,7 +38,6 @@ class Game {
       isRunning: false,
       phase: 'action',
       availablePlayers: ['blue', 'red', 'green', 'black', 'yellow', 'purple'],
-      turnOrder: [],
     );
   }
 

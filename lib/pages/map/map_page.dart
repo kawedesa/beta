@@ -1,3 +1,9 @@
+import 'dart:ui';
+
+import 'package:beta/models/equipment/chest.dart';
+import 'package:beta/models/equipment/item.dart';
+import 'package:beta/pages/map/components/obstacle.dart';
+import 'package:beta/pages/map/components/skill_button/skill_button.dart';
 import 'package:beta/pages/map/map_vm.dart';
 import 'package:beta/shared/app_exceptions.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +16,11 @@ import '../../models/player/player.dart';
 import '../../models/player/player_action.dart';
 import '../../models/user/user.dart';
 import 'components/area_effect/aoe_sprite_painter.dart';
-import 'components/game_pad/game_pad.dart';
-import 'components/player_sprite/player_sprite.dart';
+import 'components/sprite/player_sprite.dart';
+
+import 'dart:math' as _math;
+
+import 'line.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -25,6 +34,115 @@ class _MapPageState extends State<MapPage> {
   late Offset canvasSize = Offset(MediaQuery.of(context).size.width,
       MediaQuery.of(context).size.height / 2);
 
+  Path lineOfSight(Offset fromLocation, List<Obstacle> obstacles) {
+    Path rayLines = Path();
+    Path visibleArea = Path();
+    Path obstaclesArea = Path();
+
+    List<Line> obstacleEdges = [];
+    List<Line> rays = [];
+
+    for (Obstacle obstacle in obstacles) {
+      //Set collision edges
+
+      for (Line edge in obstacle.getEdges()) {
+        obstacleEdges.add(edge);
+      }
+
+      obstaclesArea =
+          Path.combine(PathOperation.union, obstaclesArea, obstacle.getArea());
+
+      //Cast rays
+      for (Offset corner in obstacle.points) {
+        double baseAngle = _math.atan2(
+            corner.dy - fromLocation.dy, corner.dx - fromLocation.dx);
+        double angle = 0;
+        for (int i = 0; i < 3; i++) {
+          if (i == 0) {
+            angle = baseAngle - 0.001;
+          }
+          if (i == 1) {
+            angle = baseAngle;
+          }
+          if (i == 2) {
+            angle = baseAngle + 0.001;
+          }
+
+          double x = _math.cos(angle);
+          double y = _math.sin(angle);
+
+          Offset endPoint =
+              Offset(fromLocation.dx + (x * 500), fromLocation.dy + (y * 500));
+
+          rays.add(Line(p1: fromLocation, p2: endPoint));
+
+          rayLines.moveTo(fromLocation.dx, fromLocation.dy);
+          rayLines.lineTo(endPoint.dx, endPoint.dy);
+        }
+      }
+    }
+
+    //Get visible points
+    List<Tangent> visiblePoints = [];
+
+    for (Line ray in rays) {
+      List<Tangent> intersectionPoints = [];
+
+      for (Line edge in obstacleEdges) {
+        Tangent? intersection = ray.getIntersectionPoints(edge.p1, edge.p2);
+
+        if (intersection != null) {
+          intersectionPoints.add(intersection);
+          rayLines.addOval(
+              Rect.fromCircle(center: intersection.position, radius: 1));
+        }
+      }
+
+      Tangent? closestPoint;
+
+      for (Tangent point in intersectionPoints) {
+        closestPoint ??= point;
+
+        if (point.angle >= closestPoint.angle) {
+          closestPoint = point;
+        }
+      }
+
+      if (closestPoint != null) {
+        double angleFromSource = _math.atan2(
+            closestPoint.position.dy - fromLocation.dy,
+            closestPoint.position.dx - fromLocation.dx);
+
+        visiblePoints
+            .add(Tangent.fromAngle(closestPoint.position, angleFromSource));
+
+        rayLines
+            .addOval(Rect.fromCircle(center: closestPoint.position, radius: 3));
+      }
+    }
+
+    //Sort points by smallest angle
+
+    visiblePoints.sort((a, b) => a.angle.compareTo(b.angle));
+
+    visibleArea.moveTo(
+        visiblePoints.first.position.dx, visiblePoints.first.position.dy);
+
+    for (Tangent point in visiblePoints) {
+      visibleArea.lineTo(point.position.dx, point.position.dy);
+    }
+
+    visibleArea.close();
+
+    Path circleAroundPlayer = Path()
+      ..addOval(Rect.fromCircle(center: fromLocation, radius: 75));
+
+    visibleArea =
+        Path.combine(PathOperation.intersect, visibleArea, circleAroundPlayer);
+
+    return visibleArea;
+  }
+
   @override
   void initState() {
     _mapVM.animationController.loadUiAnimationFile();
@@ -32,35 +150,41 @@ class _MapPageState extends State<MapPage> {
     super.initState();
   }
 
+  void refresh() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final players = Provider.of<List<Player>>(context);
-
+    final chests = Provider.of<List<Chest>>(context);
+    final items = Provider.of<List<Item>>(context);
     final turnOrder = Provider.of<List<PlayerAction>>(context);
     final game = Provider.of<Game>(context);
     final user = Provider.of<User>(context);
 
     _mapVM.playerController.setPlayer(players, user.id);
-    _mapVM.setCanvas(context, 640);
+    _mapVM.setCanvas(context);
     _mapVM.setEnemy(players, user.id);
+    _mapVM.setChest(chests);
+    _mapVM.setItem(items);
 
     try {
       _mapVM.turnController.checkGamePhase(game.phase);
-    } on AnimationPhase {
+    } on AnimationPhaseException {
       try {
         _mapVM.turnController.checkForPlayerTurn(turnOrder, user.id);
-      } on PlayerTurn {
+      } on PlayerTurnException {
+        _mapVM.animationController.playActionAnimation(turnOrder.first);
         _mapVM.playerController.takeAction(players);
+      } on NotPlayerTurnException {
         _mapVM.animationController.playActionAnimation(turnOrder.first);
-      } on NotPlayerTurn {
-        _mapVM.animationController.playActionAnimation(turnOrder.first);
-      } on StartActionPhase {
-        _mapVM.animationController.playYourTurnAnimation();
-
+      } on StartActionPhaseException {
         game.actionPhase();
+        _mapVM.animationController.playYourTurnAnimation();
       }
-    } on ActionPhase {
-      if (turnOrder.length == players.length) {
+    } on ActionPhaseException {
+      if (turnOrder.length == players.length * 2) {
         game.animationPhase();
       }
     }
@@ -84,7 +208,8 @@ class _MapPageState extends State<MapPage> {
                   child: Stack(
                     children: [
                       GestureDetector(
-                        onTapDown: (details) {
+                        onTapUp: (details) {
+                          print(details.localPosition);
                           setState(() {
                             _mapVM.playerController
                                 .setWalk(details.localPosition, _mapVM.wall);
@@ -92,27 +217,60 @@ class _MapPageState extends State<MapPage> {
                         },
                         child: Stack(
                           children: [
-                            SvgPicture.asset(
-                              'assets/image/map/arena.svg',
+                            // SvgPicture.asset(
+                            //   'assets/image/map/arena.svg',
+                            //   height: _mapVM.mapSize,
+                            //   width: _mapVM.mapSize,
+                            // ),
+                            Image.asset(
+                              'assets/image/map/arena.png',
                               height: _mapVM.mapSize,
                               width: _mapVM.mapSize,
-                            ),
+                            )
                           ],
                         ),
                       ),
                       CustomPaint(
                         painter: PathTrace(
-                            path: _mapVM.playerController.pathFinding.path),
+                            path: _mapVM
+                                .playerController.firstAction.pathFinding.path),
                       ),
                       CustomPaint(
-                        painter: Wall(area: _mapVM.wall),
+                        painter: PathTrace(
+                            path: _mapVM.playerController.secondAction
+                                .pathFinding.path),
+                      ),
+                      CustomPaint(
+                        painter: LineSight(
+                          path: lineOfSight(
+                              _mapVM
+                                  .playerController.player.location.oldLocation,
+                              _mapVM.map.obstacles),
+                        ),
+                      ),
+                      // CustomPaint(
+                      //   painter: Wall(area: _mapVM.map.seeObstacles()),
+                      // ),
+                      // CustomPaint(
+                      //   painter: Wall(area: _mapVM.outSideWall),
+                      // ),
+                      Stack(
+                        children: _mapVM.visibleEnemies,
                       ),
                       Stack(
-                        children: _mapVM.enemy,
+                        children: _mapVM.visibleChests,
+                      ),
+                      Stack(
+                        children: _mapVM.visibleItems,
                       ),
                       CustomPaint(
                         painter: AreaEffectSpritePainter(
-                            area: _mapVM.playerController.aoe.area),
+                            area: _mapVM.playerController.firstAction.aoe.area),
+                      ),
+                      CustomPaint(
+                        painter: AreaEffectSpritePainter(
+                            area:
+                                _mapVM.playerController.secondAction.aoe.area),
                       ),
                       Positioned(
                         left: _mapVM.animationController.tempAction.location.dx,
@@ -122,12 +280,22 @@ class _MapPageState extends State<MapPage> {
                                 ? TransparentPointer(
                                     transparent: true,
                                     child: Transform.rotate(
-                                      origin: const Offset(-50, -50),
+                                      origin: Offset(
+                                          -_mapVM.animationController.tempAction
+                                                  .distance /
+                                              4,
+                                          -_mapVM.animationController.tempAction
+                                                  .distance /
+                                              4),
                                       angle: _mapVM
                                           .animationController.tempAction.angle,
                                       child: SizedBox(
-                                        width: 100,
-                                        height: 100,
+                                        width: _mapVM.animationController
+                                                .tempAction.distance /
+                                            2,
+                                        height: _mapVM.animationController
+                                                .tempAction.distance /
+                                            2,
                                         child: Rive(
                                           artboard: _mapVM.animationController
                                               .attackArtboard!,
@@ -140,8 +308,20 @@ class _MapPageState extends State<MapPage> {
                       ),
                       PlayerSprite(controller: _mapVM.playerController),
                       Positioned(
-                        left: _mapVM.playerController.action.location.dx - 2,
-                        top: _mapVM.playerController.action.location.dy - 2,
+                        left:
+                            _mapVM.playerController.firstAction.location.dx - 2,
+                        top:
+                            _mapVM.playerController.firstAction.location.dy - 2,
+                        child: const CircleAvatar(
+                          radius: 2,
+                          backgroundColor: Colors.black,
+                        ),
+                      ),
+                      Positioned(
+                        left: _mapVM.playerController.secondAction.location.dx -
+                            2,
+                        top: _mapVM.playerController.secondAction.location.dy -
+                            2,
                         child: const CircleAvatar(
                           radius: 2,
                           backgroundColor: Colors.black,
@@ -169,25 +349,21 @@ class _MapPageState extends State<MapPage> {
               ),
               Align(
                 alignment: const Alignment(-0.75, 0.5),
-                child: GamePad(
-                  gamePhase: game.phase,
-                  gamePadSize: 50,
-                  confirm: () {
-                    _mapVM.playerController.setAction();
-                  },
-                  output: (angle, distance) {
-                    setState(() {
-                      _mapVM.playerController.setAttack(
-                        angle,
-                        distance,
-                      );
-                      // _mapVM.playerController.setAOE(
-                      //   angle,
-                      //   distance,
-                      // );
-                    });
-                  },
-                ),
+                child: SkillButton(
+                    gamePhase: game.phase,
+                    equipmentSlot: 'leftHand',
+                    equipment: _mapVM.playerController.player.leftHand,
+                    controller: _mapVM.playerController,
+                    refresh: refresh),
+              ),
+              Align(
+                alignment: const Alignment(0.75, 0.5),
+                child: SkillButton(
+                    gamePhase: game.phase,
+                    equipmentSlot: 'rightHand',
+                    equipment: _mapVM.playerController.player.rightHand,
+                    controller: _mapVM.playerController,
+                    refresh: refresh),
               ),
               Align(
                 alignment: const Alignment(-.95, -.95),
@@ -255,6 +431,44 @@ class PathTrace extends CustomPainter {
     canvas.drawPath(
       path,
       strokePath,
+    );
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+class LineSight extends CustomPainter {
+  Path path;
+  LineSight({required this.path});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokePath = Paint()
+      ..strokeWidth = 0.5
+      ..color = Colors.blue
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.round;
+
+    final fillPath = Paint()
+      ..color = Colors.black.withAlpha(150)
+      ..strokeJoin = StrokeJoin.round;
+
+    Path shadow = Path.combine(
+        PathOperation.difference,
+        Path()
+          ..moveTo(0, 0)
+          ..lineTo(0, 320)
+          ..lineTo(320, 320)
+          ..lineTo(320, 0)
+          ..close(),
+        path);
+
+    canvas.drawPath(
+      shadow,
+      fillPath,
     );
   }
 

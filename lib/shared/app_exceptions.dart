@@ -1,23 +1,23 @@
-class PlayerTurn implements Exception {
-  PlayerTurn();
+class PlayerTurnException implements Exception {
+  PlayerTurnException();
 }
 
-class NotPlayerTurn implements Exception {
-  NotPlayerTurn();
+class NotPlayerTurnException implements Exception {
+  NotPlayerTurnException();
 }
 
-class AnimationPhase implements Exception {
-  AnimationPhase();
+class AnimationPhaseException implements Exception {
+  AnimationPhaseException();
 }
 
-class ActionPhase implements Exception {
-  ActionPhase();
+class ActionPhaseException implements Exception {
+  ActionPhaseException();
 }
 
-class StartActionPhase implements Exception {
-  StartActionPhase();
+class StartActionPhaseException implements Exception {
+  StartActionPhaseException();
 }
 
-class SetAction implements Exception {
-  SetAction();
+class SetActionException implements Exception {
+  SetActionException();
 }

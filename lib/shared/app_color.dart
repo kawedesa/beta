@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class UIColor {
-  Color setPlayerColor(String id) {
+  Color getPlayerColor(String id) {
     switch (id) {
       case 'blue':
         return Colors.blue;

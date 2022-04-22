@@ -2,19 +2,38 @@ import 'package:flutter/material.dart';
 import 'dart:math' as _math;
 import 'dart:typed_data';
 
+import '../../../../models/equipment/equipment.dart';
+
 class AreaEffect {
   Path area = Path();
   AreaEffect();
 
-  void setArea(double angle, double distance, Offset location) {
-    double aoeSize = (distance * 200);
+  void setArea(
+      double angle, double distance, Offset location, Equipment equipment) {
+    switch (equipment.name) {
+      case 'sword':
+        area = Path();
+        area.moveTo(0, 0);
+        area.lineTo(_math.sqrt(2) / 4 * distance, _math.sqrt(2) / 4 * distance);
+        area.arcToPoint(
+            Offset(-_math.sqrt(2) / 4 * distance, _math.sqrt(2) / 4 * distance),
+            radius: Radius.circular(distance / 2));
+        area.close();
 
-    area = Path();
-    area.moveTo(0, 0);
-    area.lineTo(aoeSize / 2, 0);
-    area.arcToPoint(Offset(0, aoeSize / 2),
-        radius: Radius.circular(aoeSize / 2));
-    area.close();
+        break;
+
+      case 'bow':
+        area = Path()
+          ..addRect(Rect.fromPoints(Offset(-5, 0), Offset(5, distance)));
+
+        break;
+      case 'wand':
+        area = Path()
+          ..addOval(
+              Rect.fromCircle(center: Offset(0, distance / 2), radius: 10));
+
+        break;
+    }
 
     final addRotation = Float64List.fromList([
       _math.cos(angle),

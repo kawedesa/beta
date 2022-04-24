@@ -75,8 +75,8 @@ class _PlayerSpriteState extends State<PlayerSprite>
               decoration: BoxDecoration(
                   color: widget.controller.getColor(),
                   borderRadius: BorderRadius.circular(10)),
-              width: 6,
-              height: 6,
+              width: 5,
+              height: 5,
             ),
           ),
           Align(
@@ -84,8 +84,8 @@ class _PlayerSpriteState extends State<PlayerSprite>
             child: SizedBox(
               child: Stack(
                 children: [
-                  SvgPicture.asset('assets/image/sprite/dwarf/body.svg'),
-                  SvgPicture.asset('assets/image/sprite/dwarf/head.svg'),
+                  SvgPicture.asset('assets/sprites/races/dwarf/body.svg'),
+                  SvgPicture.asset('assets/sprites/races/dwarf/head.svg'),
                 ],
               ),
               width: 12,

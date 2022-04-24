@@ -29,7 +29,7 @@ class MapVM {
   GameMap map = GameMap.newMap();
 
   double mapSize = 320;
-  double minZoom = 4;
+  double minZoom = 5;
   double maxZoom = 15;
 
   void setCanvas(context) {

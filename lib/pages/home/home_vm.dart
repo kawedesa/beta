@@ -68,12 +68,32 @@ class HomeVM {
     });
     itemBatch.commit();
 
-    await database
-        .collection('game')
-        .doc('beta')
-        .collection('chest')
-        .doc('1')
-        .set(Chest.newChest('1', const Offset(50, 50)).toMap());
+    resetChests();
+  }
+
+  void resetChests() async {
+    List<Offset> possibleChestLocation = [
+      Offset(190, 85),
+      Offset(235, 85),
+      Offset(235, 125),
+      Offset(190, 125),
+      Offset(200, 25),
+      Offset(265, 25),
+      Offset(60, 135),
+      Offset(60, 115),
+      Offset(20, 295),
+      Offset(20, 260),
+      Offset(300, 280),
+    ];
+
+    for (int i = 0; i < possibleChestLocation.length; i++) {
+      await database
+          .collection('game')
+          .doc('beta')
+          .collection('chest')
+          .doc(i.toString())
+          .set(Chest.newChest(i.toString(), possibleChestLocation[i]).toMap());
+    }
   }
 
   void goToLobbyPage(context) {

@@ -18,36 +18,41 @@ class ItemSprite extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: item.location.dx,
-      top: item.location.dy - 10,
+      left: item.location.dx - 8,
+      top: item.location.dy - 16,
       child: Draggable<Equipment>(
         data: item.equipment,
-        child: CircleAvatar(
-          radius: 5,
-          backgroundColor: Colors.purple,
-          child: ItemImage(
-            item: item,
+        child: SizedBox(
+          width: 16,
+          height: 16,
+          child: EquipmentImage(
+            equipment: item.equipment,
           ),
         ),
         onDragCompleted: () {
           item.remove(item.id);
         },
-        childWhenDragging:
-            CircleAvatar(radius: 5, backgroundColor: Colors.grey),
-        feedback: CircleAvatar(radius: 30, backgroundColor: Colors.yellow),
+        childWhenDragging: SizedBox(),
+        feedback: Transform(
+          transform:
+              Matrix4(3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, -15, -15, 0, 1),
+          alignment: Alignment.center,
+          child: EquipmentImage(
+            equipment: item.equipment,
+          ),
+        ),
       ),
     );
   }
 }
 
-class ItemImage extends StatelessWidget {
-  final Item item;
+class EquipmentImage extends StatelessWidget {
+  final Equipment equipment;
 
-  const ItemImage({Key? key, required this.item}) : super(key: key);
+  const EquipmentImage({Key? key, required this.equipment}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
-        'assets/image/icon/item/${item.equipment.name}.svg');
+    return SvgPicture.asset('assets/sprites/items/${equipment.name}.svg');
   }
 }

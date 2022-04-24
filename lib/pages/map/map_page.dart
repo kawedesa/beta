@@ -223,7 +223,7 @@ class _MapPageState extends State<MapPage> {
                             //   width: _mapVM.mapSize,
                             // ),
                             Image.asset(
-                              'assets/image/map/arena.png',
+                              'assets/sprites/maps/arena.png',
                               height: _mapVM.mapSize,
                               width: _mapVM.mapSize,
                             )

@@ -4,6 +4,7 @@ import '../../../../models/equipment/equipment.dart';
 import '../../../../models/player/player_controller.dart';
 import 'game_pad.dart';
 
+// ignore: must_be_immutable
 class SkillButton extends StatefulWidget {
   String gamePhase;
   String equipmentSlot;
@@ -26,9 +27,9 @@ class SkillButton extends StatefulWidget {
 }
 
 class _SkillButtonState extends State<SkillButton> {
-  @override
   bool dragItem = false;
 
+  @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       transitionBuilder: (Widget child, Animation<double> animation) =>
@@ -52,8 +53,16 @@ class _SkillButtonState extends State<SkillButton> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: (dragItem) ? Colors.green : Colors.purple,
                           shape: BoxShape.circle,
+                          color: (dragItem)
+                              ? Colors.green.withAlpha(125)
+                              : Colors.grey.withAlpha(75),
+                          border: Border.all(
+                            color: (dragItem)
+                                ? Colors.green.withAlpha(250)
+                                : Colors.grey.withAlpha(125),
+                            width: 2,
+                          ),
                         ),
                       )
                     : GamePad(
@@ -69,7 +78,11 @@ class _SkillButtonState extends State<SkillButton> {
                 dragItem = false;
               },
               onWillAccept: (dragItemDetail) {
-                return true;
+                if (widget.equipment.name == '') {
+                  return true;
+                } else {
+                  return false;
+                }
               },
               onAccept: (dragItemDetail) {
                 widget.controller.player

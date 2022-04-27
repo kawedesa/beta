@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'aoe_sprite_painter.dart';
+import 'area_effect_sprite_painter.dart';
 
 class AreaEffectSprite extends StatelessWidget {
   final Offset center;

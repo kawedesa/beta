@@ -1,3 +1,4 @@
+import 'package:beta/shared/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:ui';
@@ -16,7 +17,7 @@ class PlayerSprite extends StatefulWidget {
 
 class _PlayerSpriteState extends State<PlayerSprite>
     with SingleTickerProviderStateMixin {
-  final double spriteSize = 20;
+  UIColor uiColor = UIColor();
   late Animation _animation;
   late AnimationController animationController;
 
@@ -73,7 +74,7 @@ class _PlayerSpriteState extends State<PlayerSprite>
             alignment: Alignment.center,
             child: Container(
               decoration: BoxDecoration(
-                  color: widget.controller.getColor(),
+                  color: uiColor.getPlayerColor(widget.controller.player.id),
                   borderRadius: BorderRadius.circular(10)),
               width: 5,
               height: 5,

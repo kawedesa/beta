@@ -1,4 +1,4 @@
-import 'package:beta/models/equipment/equipment.dart';
+import 'package:beta/models/item/equipment.dart';
 import 'package:beta/models/player/player_controller.dart';
 import 'package:beta/pages/map/components/sprite/item_sprite.dart';
 import 'package:flutter/material.dart';

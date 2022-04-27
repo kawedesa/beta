@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../equipment/equipment.dart';
+import '../item/equipment.dart';
 
 class Player {
   String id;

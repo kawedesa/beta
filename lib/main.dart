@@ -1,5 +1,5 @@
-import 'package:beta/models/equipment/chest.dart';
-import 'package:beta/models/equipment/item.dart';
+import 'package:beta/models/item/chest.dart';
+import 'package:beta/models/item/item.dart';
 import 'package:beta/models/player/player_action.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

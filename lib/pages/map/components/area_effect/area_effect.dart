@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as _math;
 import 'dart:typed_data';
 
-import '../../../../models/equipment/equipment.dart';
+import '../../../../models/item/equipment.dart';
 
 class AreaEffect {
   Path area = Path();

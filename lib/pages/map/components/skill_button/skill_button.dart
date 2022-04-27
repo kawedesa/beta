@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../models/equipment/equipment.dart';
+import '../../../../models/item/equipment.dart';
 import '../../../../models/player/player_controller.dart';
 import 'game_pad.dart';
 

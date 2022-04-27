@@ -15,7 +15,7 @@ class PathFinding {
     while (bestPath.length < 10) {
       List<Offset> possibleNodes = [];
       Offset bestNode = startPosition;
-      int walkDistance = 2;
+      int walkDistance = 1;
 
       //Create points around the current location
 
@@ -59,7 +59,8 @@ class PathFinding {
     }
 
     path = Path();
-    path.moveTo(bestPath.first.dx, bestPath.first.dy);
+    path.moveTo(startPosition.dx, startPosition.dy);
+    path.lineTo(bestPath.first.dx, bestPath.first.dy);
     for (Offset point in bestPath) {
       path.lineTo(point.dx, point.dy);
     }

@@ -1,9 +1,9 @@
-import 'package:beta/models/equipment/equipment.dart';
+import 'package:beta/models/item/equipment.dart';
 import 'package:beta/models/player/player_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../models/equipment/item.dart';
+import '../../../../models/item/item.dart';
 
 class ItemSprite extends StatelessWidget {
   final PlayerController controller;

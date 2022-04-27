@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-import '../../../../models/equipment/chest.dart';
+import '../../../../models/item/chest.dart';
 
 class ChestSprite extends StatelessWidget {
+  final Function() openChest;
   final Chest chest;
-  const ChestSprite({Key? key, required this.chest}) : super(key: key);
+  const ChestSprite({Key? key, required this.chest, required this.openChest})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +22,7 @@ class ChestSprite extends StatelessWidget {
             )
           : GestureDetector(
               onTap: () {
-                chest.openChest();
+                openChest();
               },
               child: SizedBox(
                 width: 8,

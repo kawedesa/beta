@@ -1,10 +1,9 @@
-import 'package:beta/models/equipment/equipment.dart';
+import 'package:beta/models/item/equipment.dart';
 import 'package:beta/models/player/player.dart';
 import 'package:beta/models/player/player_action.dart';
+import 'package:beta/pages/map/components/obstacle.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-import '../../shared/app_color.dart';
 
 class PlayerController {
   Player player;
@@ -27,8 +26,6 @@ class PlayerController {
 
   final database = FirebaseFirestore.instance;
 
-  UIColor uiColor = UIColor();
-
   void setPlayer(List<Player> players, String id) {
     for (Player player in players) {
       if (player.id == id) {
@@ -37,12 +34,8 @@ class PlayerController {
     }
   }
 
-  Color getColor() {
-    return uiColor.getPlayerColor(player.id);
-  }
-
-  void setWalk(Offset endPosition, Path obstacles) {
-    if (obstacles.contains(endPosition)) {
+  void setWalk(Offset endPosition, Path obstacleArea) {
+    if (obstacleArea.contains(endPosition)) {
       return;
     }
     if (player.location.isWalking()) {
@@ -51,7 +44,7 @@ class PlayerController {
 
     if (firstAction.time == 0) {
       firstAction.pathFinding
-          .setPath(player.location.oldLocation, endPosition, obstacles);
+          .setPath(player.location.oldLocation, endPosition, obstacleArea);
       firstAction.walk(player.id);
       setAction(firstAction);
       return;
@@ -59,7 +52,7 @@ class PlayerController {
 
     if (secondAction.time == 0) {
       secondAction.pathFinding
-          .setPath(firstAction.location, endPosition, obstacles);
+          .setPath(firstAction.location, endPosition, obstacleArea);
       secondAction.walk(player.id);
       setAction(secondAction);
       return;

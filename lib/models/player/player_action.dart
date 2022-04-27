@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../pages/map/components/area_effect/aoe.dart';
+import '../../pages/map/components/area_effect/area_effect.dart';
 import '../../shared/path_finding.dart';
 
 class PlayerAction {

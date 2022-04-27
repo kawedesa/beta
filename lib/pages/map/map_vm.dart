@@ -1,34 +1,30 @@
+import 'package:beta/models/game_map/game_map.dart';
 import 'package:beta/pages/map/components/sprite/chest_sprite.dart';
 import 'package:beta/pages/map/components/sprite/item_sprite.dart';
 import 'package:flutter/material.dart';
-import '../../models/equipment/chest.dart';
-import '../../models/equipment/item.dart';
-import '../../models/equipment/equipment.dart';
+import '../../models/item/chest.dart';
+import '../../models/item/item.dart';
+import '../../models/item/equipment.dart';
 import '../../models/game/turn_controller.dart';
 import '../../models/player/player.dart';
 import '../../models/player/player_controller.dart';
 import '../../shared/app_color.dart';
 import '../lobby/lobby_page.dart';
+import 'components/line_of_sight.dart';
 import 'components/sprite/enemy_sprite.dart';
-import 'game_map.dart';
+
 import 'map_animation_controller.dart';
 
 class MapVM {
   PlayerController playerController = PlayerController.empty();
+  UIColor uiColor = UIColor();
   TurnController turnController = TurnController();
   MapAnimationController animationController = MapAnimationController();
   TransformationController? canvasController;
-
-  Path wall = Path()
-    ..moveTo(128, 128)
-    ..lineTo(128, 200)
-    ..lineTo(192, 200)
-    ..lineTo(192, 128)
-    ..close();
+  LineOfSight lineOfSight = LineOfSight();
 
   GameMap map = GameMap.newMap();
 
-  double mapSize = 320;
   double minZoom = 5;
   double maxZoom = 15;
 
@@ -50,19 +46,24 @@ class MapVM {
     if (dxCanvas < 0) {
       dxCanvas = 0;
     }
-    if (dxCanvas > mapSize * minZoom - MediaQuery.of(context).size.width) {
-      dxCanvas = mapSize * minZoom - MediaQuery.of(context).size.width;
+    if (dxCanvas > map.size * minZoom - MediaQuery.of(context).size.width) {
+      dxCanvas = map.size * minZoom - MediaQuery.of(context).size.width;
     }
     if (dyCanvas < 0) {
       dyCanvas = 0;
     }
     if (dyCanvas >
-        mapSize * minZoom - MediaQuery.of(context).size.height * 0.9) {
-      dyCanvas = mapSize * minZoom - MediaQuery.of(context).size.height * 0.9;
+        map.size * minZoom - MediaQuery.of(context).size.height * 0.9) {
+      dyCanvas = map.size * minZoom - MediaQuery.of(context).size.height * 0.9;
     }
 
     canvasController = TransformationController(Matrix4(minZoom, 0, 0, 0, 0,
         minZoom, 0, 0, 0, 0, minZoom, 0, -dxCanvas, -dyCanvas, 0, 1));
+  }
+
+  void setVisibleArea() {
+    lineOfSight.setVisibleArea(
+        playerController.player.location.oldLocation, map.obstacles);
   }
 
   List<Widget> visibleEnemies = [];
@@ -70,9 +71,10 @@ class MapVM {
   void setEnemy(List<Player> players, String playerID) {
     visibleEnemies = [];
     for (Player player in players) {
-      if (player.id != playerID) {
+      if (player.id != playerID &&
+          lineOfSight.visibleArea.contains(player.location.oldLocation)) {
         visibleEnemies.add(EnemySprite(
-          obstacles: wall,
+          obstacles: map.getObstacleArea(),
           player: player,
         ));
       }
@@ -85,7 +87,20 @@ class MapVM {
     visibleChests = [];
 
     for (Chest chest in chestList) {
-      visibleChests.add(ChestSprite(chest: chest));
+      if (lineOfSight.visibleArea.contains(chest.location)) {
+        visibleChests.add(ChestSprite(
+          chest: chest,
+          openChest: () {
+            if ((chest.location - playerController.player.location.oldLocation)
+                    .distance <
+                5) {
+              chest.openChest();
+            } else {
+              playerController.setWalk(chest.location, map.getObstacleArea());
+            }
+          },
+        ));
+      }
     }
   }
 
@@ -95,11 +110,17 @@ class MapVM {
     visibleItems = [];
 
     for (Item item in itemList) {
-      visibleItems.add(ItemSprite(
-        controller: playerController,
-        item: item,
-      ));
+      if (lineOfSight.visibleArea.contains(item.location)) {
+        visibleItems.add(ItemSprite(
+          controller: playerController,
+          item: item,
+        ));
+      }
     }
+  }
+
+  Color getPlayerColor() {
+    return uiColor.getPlayerColor(playerController.player.id);
   }
 
   void goToLobbyPage(context) {

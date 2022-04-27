@@ -1,4 +1,4 @@
-import 'package:beta/models/equipment/equipment.dart';
+import 'package:beta/models/item/equipment.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 

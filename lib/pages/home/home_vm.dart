@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../models/equipment/chest.dart';
+import '../../models/item/chest.dart';
 import '../../models/game/game.dart';
 import '../lobby/lobby_page.dart';
 

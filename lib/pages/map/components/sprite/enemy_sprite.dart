@@ -1,5 +1,7 @@
+import 'package:beta/shared/app_color.dart';
 import 'package:beta/shared/path_finding.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'dart:ui';
 import '../../../../models/player/player.dart';
 
@@ -16,7 +18,7 @@ class EnemySprite extends StatefulWidget {
 class _EnemySpriteState extends State<EnemySprite>
     with SingleTickerProviderStateMixin {
   final PathFinding _pathFinding = PathFinding();
-  final double spriteSize = 20;
+  UIColor uiColor = UIColor();
   late Animation _animation;
   late AnimationController animationController;
 
@@ -38,8 +40,7 @@ class _EnemySpriteState extends State<EnemySprite>
   }
 
   Offset calculatePosition(value) {
-    if (widget.player.location.
-    isStop()) {
+    if (widget.player.location.isStop()) {
       return widget.player.location.oldLocation;
     }
 
@@ -62,13 +63,36 @@ class _EnemySpriteState extends State<EnemySprite>
       animationController.reset();
     }
     return Positioned(
-      top: calculatePosition(_animation.value).dy - 5,
-      left: calculatePosition(_animation.value).dx - 5,
-      child: Container(
-        decoration: BoxDecoration(
-            color: Colors.blueAccent, borderRadius: BorderRadius.circular(10)),
-        width: 10,
-        height: 10,
+      top: calculatePosition(_animation.value).dy - 12,
+      left: calculatePosition(_animation.value).dx - 6,
+      child: SizedBox(
+        width: 12,
+        height: 24,
+        child: Stack(children: [
+          Align(
+            alignment: Alignment.center,
+            child: Container(
+              decoration: BoxDecoration(
+                  color: uiColor.getPlayerColor(widget.player.id),
+                  borderRadius: BorderRadius.circular(10)),
+              width: 5,
+              height: 5,
+            ),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              child: Stack(
+                children: [
+                  SvgPicture.asset('assets/sprites/races/dwarf/body.svg'),
+                  SvgPicture.asset('assets/sprites/races/dwarf/head.svg'),
+                ],
+              ),
+              width: 12,
+              height: 12,
+            ),
+          ),
+        ]),
       ),
     );
   }
